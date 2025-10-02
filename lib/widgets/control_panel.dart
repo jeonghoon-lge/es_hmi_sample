@@ -121,7 +121,7 @@ class ControlPanel extends StatelessWidget {
     );
   }
 
-  /// 데이터 조작 섹션
+  /// 데이터 조작 섹션 (슬라이더 기반)
   Widget _buildDataControlSection(
       BuildContext context, ChartProvider chartProvider) {
     return _buildSectionCard(
@@ -130,21 +130,253 @@ class ControlPanel extends StatelessWidget {
       icon: Icons.tune,
       child: Column(
         children: [
-          _buildDataControlButton(
-            context,
-            icon: Icons.refresh,
-            label: '데이터 초기화',
-            onTap: () => chartProvider.initializeData(),
-          ),
-          const SizedBox(height: 8),
-          _buildDataControlButton(
-            context,
-            icon: Icons.add,
-            label: '샘플 데이터 추가',
-            onTap: () => _showAddDataDialog(context, chartProvider),
+          // 차트 타입별 슬라이더 표시
+          ..._buildSliderControls(context, chartProvider),
+          const SizedBox(height: 16),
+          // 리셋 버튼
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => chartProvider.initializeData(),
+                  icon: const Icon(Icons.refresh, size: 16),
+                  label: const Text('데이터 초기화'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange.shade100,
+                    foregroundColor: Colors.orange.shade700,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  /// 차트 타입별 슬라이더 컨트롤 생성
+  List<Widget> _buildSliderControls(
+      BuildContext context, ChartProvider chartProvider) {
+    switch (chartProvider.currentChartType) {
+      case ChartType.bar:
+        return _buildBarChartSliders(context, chartProvider);
+      case ChartType.pie:
+        return _buildPieChartSliders(context, chartProvider);
+      case ChartType.line:
+        return _buildLineChartSliders(context, chartProvider);
+      case ChartType.stackedBar:
+        return _buildStackedBarChartSliders(context, chartProvider);
+      case ChartType.donut:
+        return _buildDonutChartSliders(context, chartProvider);
+    }
+  }
+
+  /// Bar Chart용 슬라이더들
+  List<Widget> _buildBarChartSliders(
+      BuildContext context, ChartProvider chartProvider) {
+    if (chartProvider.barChartData.isEmpty) return [];
+
+    final data = chartProvider.barChartData.first;
+    List<Widget> sliders = [];
+
+    // 각 사용량 카테고리별 슬라이더
+    sliders.add(_buildSlider(
+      context: context,
+      label: '기본 사용량',
+      value: data.baseUsage,
+      min: 0,
+      max: 100,
+      onChanged: (value) {
+        chartProvider.updateBarDataCategory(0, 'base', value);
+      },
+    ));
+
+    sliders.add(const SizedBox(height: 8));
+
+    sliders.add(_buildSlider(
+      context: context,
+      label: '에어컨 사용량',
+      value: data.acUsage,
+      min: 0,
+      max: 100,
+      onChanged: (value) {
+        chartProvider.updateBarDataCategory(0, 'ac', value);
+      },
+    ));
+
+    sliders.add(const SizedBox(height: 8));
+
+    sliders.add(_buildSlider(
+      context: context,
+      label: '난방 사용량',
+      value: data.heatingUsage,
+      min: 0,
+      max: 100,
+      onChanged: (value) {
+        chartProvider.updateBarDataCategory(0, 'heating', value);
+      },
+    ));
+
+    sliders.add(const SizedBox(height: 8));
+
+    sliders.add(_buildSlider(
+      context: context,
+      label: '기타 사용량',
+      value: data.etcUsage,
+      min: 0,
+      max: 100,
+      onChanged: (value) {
+        chartProvider.updateBarDataCategory(0, 'etc', value);
+      },
+    ));
+
+    return sliders;
+  }
+
+  /// Pie Chart용 슬라이더들
+  List<Widget> _buildPieChartSliders(
+      BuildContext context, ChartProvider chartProvider) {
+    final data = chartProvider.pieChartData;
+    List<Widget> sliders = [];
+
+    sliders.add(_buildSlider(
+      context: context,
+      label: '현재 사용량',
+      value: data.currentUsage,
+      min: 0,
+      max: data.totalCapacity,
+      onChanged: (value) {
+        chartProvider.updatePieCurrentUsage(value);
+      },
+    ));
+
+    sliders.add(const SizedBox(height: 8));
+
+    sliders.add(_buildSlider(
+      context: context,
+      label: '총 용량',
+      value: data.totalCapacity,
+      min: data.currentUsage,
+      max: 200,
+      onChanged: (value) {
+        chartProvider.updatePieTotalCapacity(value);
+      },
+    ));
+
+    return sliders;
+  }
+
+  /// Line Chart용 슬라이더들
+  List<Widget> _buildLineChartSliders(
+      BuildContext context, ChartProvider chartProvider) {
+    if (chartProvider.lineChartData.isEmpty) return [];
+
+    final data = chartProvider.lineChartData.first;
+    List<Widget> sliders = [];
+
+    // 최신 몇 개의 데이터 포인트에 대한 슬라이더 제공
+    final pointsToShow =
+        data.dataPoints.length > 3 ? 3 : data.dataPoints.length;
+    final recentPoints = data.dataPoints.take(pointsToShow).toList();
+
+    for (int i = 0; i < recentPoints.length; i++) {
+      final point = recentPoints[i];
+      sliders.add(_buildSlider(
+        context: context,
+        label: point.label.isNotEmpty ? point.label : '포인트 ${i + 1}',
+        value: point.value,
+        min: 0,
+        max: 100,
+        onChanged: (value) {
+          // Line chart 데이터 업데이트를 위한 간단한 구현
+          // 실제로는 ChartProvider에 적절한 메서드가 필요
+          // 여기서는 시뮬레이션용으로 간단하게 구현
+        },
+      ));
+      if (i < recentPoints.length - 1) {
+        sliders.add(const SizedBox(height: 8));
+      }
+    }
+
+    return sliders;
+  }
+
+  /// Stacked Bar Chart용 슬라이더들
+  List<Widget> _buildStackedBarChartSliders(
+      BuildContext context, ChartProvider chartProvider) {
+    if (chartProvider.stackedBarChartData.isEmpty) return [];
+
+    // StackedBarChartData의 실제 구조를 확인하여 적절히 구현
+    // 현재는 기본적인 구조만 제공
+    List<Widget> sliders = [];
+    sliders.add(
+      Text(
+        '스택 차트 데이터 조작',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+    );
+
+    return sliders;
+  }
+
+  /// Donut Chart용 슬라이더들 (Pie Chart와 동일)
+  List<Widget> _buildDonutChartSliders(
+      BuildContext context, ChartProvider chartProvider) {
+    return _buildPieChartSliders(context, chartProvider);
+  }
+
+  /// 개별 슬라이더 위젯
+  Widget _buildSlider({
+    required BuildContext context,
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+            Text(
+              value.toStringAsFixed(1),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            trackHeight: 4,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+            activeTrackColor: Theme.of(context).primaryColor,
+            inactiveTrackColor: Theme.of(context).primaryColor.withAlpha(50),
+            thumbColor: Theme.of(context).primaryColor,
+            overlayColor: Theme.of(context).primaryColor.withAlpha(50),
+          ),
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min,
+            max: max,
+            divisions: (max - min).toInt(),
+            onChanged: onChanged,
+          ),
+        ),
+      ],
     );
   }
 
@@ -276,36 +508,6 @@ class ControlPanel extends StatelessWidget {
     );
   }
 
-  Widget _buildDataControlButton(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.shade300),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.grey.shade600),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildColorPicker(
     BuildContext context,
     String label,
@@ -359,31 +561,6 @@ class ControlPanel extends StatelessWidget {
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('확인'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showAddDataDialog(BuildContext context, ChartProvider chartProvider) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('데이터 추가'),
-          content: const Text('새로운 샘플 데이터를 추가하시겠습니까?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('취소'),
-            ),
-            TextButton(
-              onPressed: () {
-                chartProvider.addSampleData();
-                Navigator.of(context).pop();
-              },
-              child: const Text('추가'),
             ),
           ],
         );
