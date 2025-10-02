@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../providers/chart_provider.dart';
 import '../models/chart_data_models.dart';
 import 'stacked_bar_chart.dart';
+import 'donut_chart.dart';
 
 class ChartArea extends StatelessWidget {
   const ChartArea({super.key});
@@ -174,6 +175,8 @@ class ChartArea extends StatelessWidget {
         return _buildLineChart(chartProvider);
       case ChartType.stackedBar:
         return _buildStackedBarChart(chartProvider);
+      case ChartType.donut:
+        return _buildDonutChart(chartProvider);
     }
   }
 
@@ -188,6 +191,8 @@ class ChartArea extends StatelessWidget {
         return _buildLineChartSummary(context, chartProvider);
       case ChartType.stackedBar:
         return _buildStackedBarChartSummary(context, chartProvider);
+      case ChartType.donut:
+        return _buildDonutChartSummary(context, chartProvider);
     }
   }
 
@@ -1111,5 +1116,108 @@ class ChartArea extends StatelessWidget {
       default:
         return Colors.grey;
     }
+  }
+
+  /// 도넛 차트 빌드
+  Widget _buildDonutChart(ChartProvider chartProvider) {
+    return DonutChart(
+      data: chartProvider.pieChartData,
+      title: '에너지 사용률',
+      centerText: '사용량',
+      showPercentage: true,
+      showValues: true,
+      enableInteraction: true,
+      animationDuration: const Duration(milliseconds: 1000),
+    );
+  }
+
+  /// 도넛 차트 요약 정보
+  Widget _buildDonutChartSummary(
+      BuildContext context, ChartProvider chartProvider) {
+    final data = chartProvider.pieChartData;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.teal.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.teal.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.donut_large,
+                size: 16,
+                color: Colors.teal.shade600,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '도넛 차트 요약',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.teal.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildDonutSummaryItem(
+                '현재 사용량',
+                '${data.currentUsage.toStringAsFixed(1)} kWh',
+                data.primaryColor,
+              ),
+              _buildDonutSummaryItem(
+                '총 용량',
+                '${data.totalCapacity.toStringAsFixed(1)} kWh',
+                Colors.grey.shade600,
+              ),
+              _buildDonutSummaryItem(
+                '사용률',
+                '${data.percentage.toStringAsFixed(1)}%',
+                data.percentage > 80
+                    ? Colors.red.shade600
+                    : Colors.green.shade600,
+              ),
+              _buildDonutSummaryItem(
+                '남은 용량',
+                '${(data.totalCapacity - data.currentUsage).toStringAsFixed(1)} kWh',
+                data.backgroundColor,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 도넛 차트 요약 아이템
+  Widget _buildDonutSummaryItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
   }
 }

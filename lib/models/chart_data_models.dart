@@ -6,6 +6,7 @@ enum ChartType {
   pie, // 원형 차트
   line, // 라인 차트
   stackedBar, // 스택형 막대 차트
+  donut, // 도넛 차트
 }
 
 extension ChartTypeExtension on ChartType {
@@ -19,6 +20,8 @@ extension ChartTypeExtension on ChartType {
         return '라인 그래프';
       case ChartType.stackedBar:
         return '스택형 막대 그래프';
+      case ChartType.donut:
+        return '도넛 그래프';
     }
   }
 
@@ -32,6 +35,8 @@ extension ChartTypeExtension on ChartType {
         return Icons.show_chart;
       case ChartType.stackedBar:
         return Icons.stacked_bar_chart;
+      case ChartType.donut:
+        return Icons.donut_large;
     }
   }
 
@@ -45,6 +50,8 @@ extension ChartTypeExtension on ChartType {
         return Colors.orange;
       case ChartType.stackedBar:
         return Colors.purple;
+      case ChartType.donut:
+        return Colors.teal;
     }
   }
 }

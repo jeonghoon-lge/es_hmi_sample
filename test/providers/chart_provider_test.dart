@@ -177,6 +177,9 @@ void main() {
         expect(provider.isStackedBarChart, true);
 
         provider.toggleChartType();
+        expect(provider.isDonutChart, true);
+
+        provider.toggleChartType();
         expect(provider.isBarChart, true);
       });
 
@@ -470,10 +473,16 @@ void main() {
         expect(provider.currentChartType, ChartType.stackedBar);
         expect(provider.isStackedBarChart, true);
 
-        // stackedBar -> bar
+        // stackedBar -> donut
+        provider.toggleChartType();
+        expect(provider.currentChartType, ChartType.donut);
+        expect(provider.isDonutChart, true);
+
+        // donut -> bar
         provider.toggleChartType();
         expect(provider.currentChartType, ChartType.bar);
         expect(provider.isStackedBarChart, false);
+        expect(provider.isDonutChart, false);
       });
 
       test('스택형 차트 타입 직접 설정', () {
@@ -483,6 +492,17 @@ void main() {
         expect(provider.isBarChart, false);
         expect(provider.isPieChart, false);
         expect(provider.isLineChart, false);
+        expect(provider.isDonutChart, false);
+      });
+
+      test('도넛 차트 타입 직접 설정', () {
+        provider.setChartType(ChartType.donut);
+        expect(provider.currentChartType, ChartType.donut);
+        expect(provider.isDonutChart, true);
+        expect(provider.isBarChart, false);
+        expect(provider.isPieChart, false);
+        expect(provider.isLineChart, false);
+        expect(provider.isStackedBarChart, false);
       });
     });
   });

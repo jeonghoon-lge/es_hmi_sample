@@ -25,6 +25,7 @@ class ChartProvider extends ChangeNotifier {
   bool get isPieChart => _currentChartType == ChartType.pie;
   bool get isLineChart => _currentChartType == ChartType.line;
   bool get isStackedBarChart => _currentChartType == ChartType.stackedBar;
+  bool get isDonutChart => _currentChartType == ChartType.donut;
   ChartColorScheme get colorScheme => _colorScheme;
   bool get isLoading => _isLoading;
 
@@ -193,7 +194,7 @@ class ChartProvider extends ChangeNotifier {
     debugPrint('ChartProvider: 원형 그래프 전체 데이터 업데이트');
   }
 
-  /// 차트 타입 전환 (막대 → 원형 → 라인 → 스택형 막대)
+  /// 차트 타입 전환 (막대 → 원형 → 라인 → 스택형 막대 → 도넛)
   void toggleChartType() {
     switch (_currentChartType) {
       case ChartType.bar:
@@ -206,6 +207,9 @@ class ChartProvider extends ChangeNotifier {
         _currentChartType = ChartType.stackedBar;
         break;
       case ChartType.stackedBar:
+        _currentChartType = ChartType.donut;
+        break;
+      case ChartType.donut:
         _currentChartType = ChartType.bar;
         break;
     }

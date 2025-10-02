@@ -98,6 +98,24 @@ class ControlPanel extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildChartTypeButton(
+                  context,
+                  chartProvider,
+                  chartType: ChartType.donut,
+                  icon: ChartType.donut.icon,
+                  label: ChartType.donut.displayName,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Container(), // 빈 공간 (대칭을 위해)
+              ),
+            ],
+          ),
         ],
       ),
     );
