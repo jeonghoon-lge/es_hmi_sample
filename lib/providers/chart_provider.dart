@@ -8,6 +8,7 @@ class ChartProvider extends ChangeNotifier {
   List<BarChartDataModel> _barChartData = [];
   PieChartDataModel _pieChartData = ChartDataHelper.getEmptyPieChartData();
   List<LineChartDataModel> _lineChartData = [];
+  List<StackedBarChartData> _stackedBarChartData = [];
   ChartType _currentChartType = ChartType.bar;
   ChartColorScheme _colorScheme = ChartColorScheme.defaultScheme;
   bool _isLoading = false;
@@ -17,10 +18,13 @@ class ChartProvider extends ChangeNotifier {
   PieChartDataModel get pieChartData => _pieChartData;
   List<LineChartDataModel> get lineChartData =>
       List.unmodifiable(_lineChartData);
+  List<StackedBarChartData> get stackedBarChartData =>
+      List.unmodifiable(_stackedBarChartData);
   ChartType get currentChartType => _currentChartType;
   bool get isBarChart => _currentChartType == ChartType.bar;
   bool get isPieChart => _currentChartType == ChartType.pie;
   bool get isLineChart => _currentChartType == ChartType.line;
+  bool get isStackedBarChart => _currentChartType == ChartType.stackedBar;
   ChartColorScheme get colorScheme => _colorScheme;
   bool get isLoading => _isLoading;
 
@@ -42,14 +46,16 @@ class ChartProvider extends ChangeNotifier {
       _barChartData = ChartDataHelper.getSampleBarChartData();
       _pieChartData = ChartDataHelper.getSamplePieChartData();
       _lineChartData = ChartDataHelper.getSampleLineChartData();
+      _stackedBarChartData = _generateSampleStackedBarData();
 
       debugPrint(
-          'ChartProvider: 데이터 초기화 완료 - Bar: ${_barChartData.length}개, Pie: ${_pieChartData.currentUsage}/${_pieChartData.totalCapacity}, Line: ${_lineChartData.length}개 시리즈');
+          'ChartProvider: 데이터 초기화 완료 - Bar: ${_barChartData.length}개, Pie: ${_pieChartData.currentUsage}/${_pieChartData.totalCapacity}, Line: ${_lineChartData.length}개 시리즈, StackedBar: ${_stackedBarChartData.length}개');
     } catch (e) {
       debugPrint('ChartProvider: 데이터 초기화 오류 - $e');
       _barChartData = ChartDataHelper.getEmptyBarChartData(7);
       _pieChartData = ChartDataHelper.getEmptyPieChartData();
       _lineChartData = ChartDataHelper.getEmptyLineChartData();
+      _stackedBarChartData = [];
     } finally {
       _setLoading(false);
     }
@@ -187,7 +193,7 @@ class ChartProvider extends ChangeNotifier {
     debugPrint('ChartProvider: 원형 그래프 전체 데이터 업데이트');
   }
 
-  /// 차트 타입 전환 (막대 → 원형 → 라인)
+  /// 차트 타입 전환 (막대 → 원형 → 라인 → 스택형 막대)
   void toggleChartType() {
     switch (_currentChartType) {
       case ChartType.bar:
@@ -197,6 +203,9 @@ class ChartProvider extends ChangeNotifier {
         _currentChartType = ChartType.line;
         break;
       case ChartType.line:
+        _currentChartType = ChartType.stackedBar;
+        break;
+      case ChartType.stackedBar:
         _currentChartType = ChartType.bar;
         break;
     }
@@ -335,6 +344,92 @@ class ChartProvider extends ChangeNotifier {
     debugPrint('막대 그래프 데이터 수: ${_barChartData.length}');
     debugPrint(
         '원형 그래프: ${_pieChartData.currentUsage}/${_pieChartData.totalCapacity} (${_pieChartData.percentage.toStringAsFixed(1)}%)');
+    debugPrint('스택형 막대 그래프 데이터 수: ${_stackedBarChartData.length}');
     debugPrint('========================');
+  }
+
+  /// 스택형 막대 차트 샘플 데이터 생성
+  List<StackedBarChartData> _generateSampleStackedBarData() {
+    return [
+      StackedBarChartData.fromUsageData(
+        category: 'Jan',
+        baseUsage: 45.0,
+        acUsage: 15.0,
+        heatingUsage: 8.0,
+        etcUsage: 12.0,
+      ),
+      StackedBarChartData.fromUsageData(
+        category: 'Feb',
+        baseUsage: 42.0,
+        acUsage: 12.0,
+        heatingUsage: 18.0,
+        etcUsage: 10.0,
+      ),
+      StackedBarChartData.fromUsageData(
+        category: 'Mar',
+        baseUsage: 48.0,
+        acUsage: 20.0,
+        heatingUsage: 5.0,
+        etcUsage: 15.0,
+      ),
+      StackedBarChartData.fromUsageData(
+        category: 'Apr',
+        baseUsage: 50.0,
+        acUsage: 25.0,
+        heatingUsage: 2.0,
+        etcUsage: 13.0,
+      ),
+      StackedBarChartData.fromUsageData(
+        category: 'May',
+        baseUsage: 52.0,
+        acUsage: 35.0,
+        heatingUsage: 1.0,
+        etcUsage: 14.0,
+      ),
+      StackedBarChartData.fromUsageData(
+        category: 'Jun',
+        baseUsage: 55.0,
+        acUsage: 45.0,
+        heatingUsage: 0.0,
+        etcUsage: 16.0,
+      ),
+    ];
+  }
+
+  /// 스택형 막대 차트 데이터 업데이트
+  void updateStackedBarChartData(List<StackedBarChartData> newData) {
+    _stackedBarChartData = List.from(newData);
+    notifyListeners();
+
+    debugPrint(
+        'ChartProvider: 스택형 막대 차트 데이터 업데이트 - ${_stackedBarChartData.length}개');
+  }
+
+  /// 스택형 막대 차트 데이터 추가
+  void addStackedBarChartData(StackedBarChartData newData) {
+    _stackedBarChartData.add(newData);
+    notifyListeners();
+
+    debugPrint('ChartProvider: 스택형 막대 차트 데이터 추가 - ${newData.category}');
+  }
+
+  /// 스택형 막대 차트 데이터 제거
+  void removeStackedBarChartData(int index) {
+    if (index >= 0 && index < _stackedBarChartData.length) {
+      final removedCategory = _stackedBarChartData[index].category;
+      _stackedBarChartData.removeAt(index);
+      notifyListeners();
+
+      debugPrint('ChartProvider: 스택형 막대 차트 데이터 제거 - $removedCategory');
+    }
+  }
+
+  /// 스택형 막대 차트 최대값 계산
+  double get maxStackedBarChartValue {
+    if (_stackedBarChartData.isEmpty) return 100.0;
+
+    return _stackedBarChartData
+        .map((item) => item.totalUsage)
+        .reduce((max, current) => current > max ? current : max);
   }
 }

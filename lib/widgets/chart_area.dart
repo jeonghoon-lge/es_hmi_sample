@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/chart_provider.dart';
 import '../models/chart_data_models.dart';
+import 'stacked_bar_chart.dart';
 
 class ChartArea extends StatelessWidget {
   const ChartArea({super.key});
@@ -171,6 +172,8 @@ class ChartArea extends StatelessWidget {
         return _buildPieChart(chartProvider);
       case ChartType.line:
         return _buildLineChart(chartProvider);
+      case ChartType.stackedBar:
+        return _buildStackedBarChart(chartProvider);
     }
   }
 
@@ -183,6 +186,8 @@ class ChartArea extends StatelessWidget {
         return _buildPieChartSummary(context, chartProvider);
       case ChartType.line:
         return _buildLineChartSummary(context, chartProvider);
+      case ChartType.stackedBar:
+        return _buildStackedBarChartSummary(context, chartProvider);
     }
   }
 
@@ -920,5 +925,191 @@ class ChartArea extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  /// 스택형 막대 차트 빌드
+  Widget _buildStackedBarChart(ChartProvider chartProvider) {
+    return StackedBarChart(
+      data: chartProvider.stackedBarChartData,
+      title: '월별 에너지 사용량',
+      xAxisTitle: '월',
+      yAxisTitle: '사용량 (kWh)',
+      maxY: chartProvider.maxStackedBarChartValue * 1.1,
+      showLegend: true,
+      showTooltip: true,
+      enableInteraction: true,
+      animationDuration: const Duration(milliseconds: 1000),
+    );
+  }
+
+  /// 스택형 막대 차트 요약 정보
+  Widget _buildStackedBarChartSummary(
+      BuildContext context, ChartProvider chartProvider) {
+    final data = chartProvider.stackedBarChartData;
+    if (data.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // 전체 기간 총 사용량 계산
+    final totalUsage = data.fold(0.0, (sum, item) => sum + item.totalUsage);
+    final averageUsage = totalUsage / data.length;
+
+    // 최대/최소 사용량 계산
+    final maxUsage =
+        data.map((item) => item.totalUsage).reduce((a, b) => a > b ? a : b);
+    final minUsage =
+        data.map((item) => item.totalUsage).reduce((a, b) => a < b ? a : b);
+
+    // 카테고리별 총 사용량 계산
+    final Map<String, double> categoryTotals = {};
+    for (var item in data) {
+      item.values.forEach((key, value) {
+        categoryTotals[key] = (categoryTotals[key] ?? 0.0) + value;
+      });
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.purple.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.purple.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.stacked_bar_chart,
+                size: 16,
+                color: Colors.purple.shade600,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '스택형 차트 요약',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.purple.shade700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStackedSummaryItem(
+                '총 사용량',
+                '${totalUsage.toStringAsFixed(1)} kWh',
+                Colors.purple.shade600,
+              ),
+              _buildStackedSummaryItem(
+                '평균 사용량',
+                '${averageUsage.toStringAsFixed(1)} kWh',
+                Colors.blue.shade600,
+              ),
+              _buildStackedSummaryItem(
+                '최대 사용량',
+                '${maxUsage.toStringAsFixed(1)} kWh',
+                Colors.red.shade600,
+              ),
+              _buildStackedSummaryItem(
+                '최소 사용량',
+                '${minUsage.toStringAsFixed(1)} kWh',
+                Colors.green.shade600,
+              ),
+            ],
+          ),
+          if (categoryTotals.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Divider(height: 1),
+            const SizedBox(height: 8),
+            Text(
+              '카테고리별 총 사용량',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 4,
+              children: categoryTotals.entries
+                  .map((entry) => _buildCategoryTotal(entry.key, entry.value))
+                  .toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// 스택형 차트 요약 아이템
+  Widget _buildStackedSummaryItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey.shade600,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 카테고리별 총합 표시
+  Widget _buildCategoryTotal(String category, double total) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            color: _getCategoryColor(category),
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '$category: ${total.toStringAsFixed(1)}kWh',
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 카테고리별 색상 반환
+  Color _getCategoryColor(String category) {
+    switch (category) {
+      case 'Base':
+        return Colors.blue;
+      case 'AC':
+        return Colors.red;
+      case 'Heating':
+        return Colors.orange;
+      case 'Other':
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
   }
 }

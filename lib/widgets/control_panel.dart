@@ -49,36 +49,54 @@ class ControlPanel extends StatelessWidget {
       context,
       title: '차트 타입',
       icon: Icons.swap_horiz,
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _buildChartTypeButton(
-              context,
-              chartProvider,
-              chartType: ChartType.bar,
-              icon: ChartType.bar.icon,
-              label: ChartType.bar.displayName,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildChartTypeButton(
+                  context,
+                  chartProvider,
+                  chartType: ChartType.bar,
+                  icon: ChartType.bar.icon,
+                  label: ChartType.bar.displayName,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildChartTypeButton(
+                  context,
+                  chartProvider,
+                  chartType: ChartType.pie,
+                  icon: ChartType.pie.icon,
+                  label: ChartType.pie.displayName,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildChartTypeButton(
-              context,
-              chartProvider,
-              chartType: ChartType.pie,
-              icon: ChartType.pie.icon,
-              label: ChartType.pie.displayName,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _buildChartTypeButton(
-              context,
-              chartProvider,
-              chartType: ChartType.line,
-              icon: ChartType.line.icon,
-              label: ChartType.line.displayName,
-            ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildChartTypeButton(
+                  context,
+                  chartProvider,
+                  chartType: ChartType.line,
+                  icon: ChartType.line.icon,
+                  label: ChartType.line.displayName,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildChartTypeButton(
+                  context,
+                  chartProvider,
+                  chartType: ChartType.stackedBar,
+                  icon: ChartType.stackedBar.icon,
+                  label: ChartType.stackedBar.displayName,
+                ),
+              ),
+            ],
           ),
         ],
       ),

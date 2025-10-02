@@ -5,6 +5,7 @@ enum ChartType {
   bar, // 막대 차트
   pie, // 원형 차트
   line, // 라인 차트
+  stackedBar, // 스택형 막대 차트
 }
 
 extension ChartTypeExtension on ChartType {
@@ -16,6 +17,8 @@ extension ChartTypeExtension on ChartType {
         return '원형 그래프';
       case ChartType.line:
         return '라인 그래프';
+      case ChartType.stackedBar:
+        return '스택형 막대 그래프';
     }
   }
 
@@ -27,6 +30,8 @@ extension ChartTypeExtension on ChartType {
         return Icons.pie_chart;
       case ChartType.line:
         return Icons.show_chart;
+      case ChartType.stackedBar:
+        return Icons.stacked_bar_chart;
     }
   }
 
@@ -38,6 +43,8 @@ extension ChartTypeExtension on ChartType {
         return Colors.green;
       case ChartType.line:
         return Colors.orange;
+      case ChartType.stackedBar:
+        return Colors.purple;
     }
   }
 }
@@ -325,5 +332,117 @@ class ChartColorScheme {
       heatingUsageColor: heatingUsageColor ?? this.heatingUsageColor,
       etcUsageColor: etcUsageColor ?? this.etcUsageColor,
     );
+  }
+}
+
+/// 스택형 막대 차트를 위한 데이터 모델
+class StackedBarChartData {
+  final String category; // 카테고리 (예: 'Jan', 'Feb' 등)
+  final Map<String, double> values; // 각 스택 항목의 값 (key: 항목명, value: 사용량)
+  final Map<String, Color> colors; // 각 스택 항목의 색상 (key: 항목명, value: 색상)
+
+  const StackedBarChartData({
+    required this.category,
+    required this.values,
+    required this.colors,
+  });
+
+  /// 총 사용량 계산
+  double get totalUsage {
+    return values.values.fold(0.0, (sum, value) => sum + value);
+  }
+
+  /// 각 항목의 백분율 계산
+  Map<String, double> get percentages {
+    if (totalUsage == 0) {
+      return Map.fromIterables(values.keys, List.filled(values.length, 0.0));
+    }
+
+    return values
+        .map((key, value) => MapEntry(key, (value / totalUsage) * 100));
+  }
+
+  /// 특정 항목의 값 반환
+  double getValue(String key) => values[key] ?? 0.0;
+
+  /// 특정 항목의 색상 반환
+  Color getColor(String key) => colors[key] ?? Colors.grey;
+
+  /// 특정 항목의 백분율 반환
+  double getPercentage(String key) => percentages[key] ?? 0.0;
+
+  /// 기본 생성자 (4개 카테고리용)
+  factory StackedBarChartData.fromUsageData({
+    required String category,
+    required double baseUsage,
+    required double acUsage,
+    required double heatingUsage,
+    required double etcUsage,
+    ChartColorScheme? colorScheme,
+  }) {
+    final scheme = colorScheme ?? ChartColorScheme.defaultScheme;
+
+    return StackedBarChartData(
+      category: category,
+      values: {
+        'Base': baseUsage,
+        'AC': acUsage,
+        'Heating': heatingUsage,
+        'Other': etcUsage,
+      },
+      colors: {
+        'Base': scheme.baseUsageColor,
+        'AC': scheme.acUsageColor,
+        'Heating': scheme.heatingUsageColor,
+        'Other': scheme.etcUsageColor,
+      },
+    );
+  }
+
+  /// 복사본 생성
+  StackedBarChartData copyWith({
+    String? category,
+    Map<String, double>? values,
+    Map<String, Color>? colors,
+  }) {
+    return StackedBarChartData(
+      category: category ?? this.category,
+      values: values ?? Map.from(this.values),
+      colors: colors ?? Map.from(this.colors),
+    );
+  }
+
+  @override
+  String toString() {
+    return 'StackedBarChartData(category: $category, totalUsage: ${totalUsage.toStringAsFixed(1)})';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is StackedBarChartData &&
+        other.category == category &&
+        _mapEquals(other.values, values) &&
+        _mapEquals(other.colors, colors);
+  }
+
+  @override
+  int get hashCode {
+    return category.hashCode ^ values.hashCode ^ colors.hashCode;
+  }
+
+  /// Map 비교 유틸리티
+  bool _mapEquals<K, V>(Map<K, V>? map1, Map<K, V>? map2) {
+    if (map1 == null && map2 == null) return true;
+    if (map1 == null || map2 == null) return false;
+    if (map1.length != map2.length) return false;
+
+    for (var key in map1.keys) {
+      if (!map2.containsKey(key) || map1[key] != map2[key]) {
+        return false;
+      }
+    }
+    return true;
   }
 }

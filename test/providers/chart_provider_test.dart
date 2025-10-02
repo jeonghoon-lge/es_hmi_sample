@@ -174,6 +174,9 @@ void main() {
         expect(provider.isLineChart, true);
 
         provider.toggleChartType();
+        expect(provider.isStackedBarChart, true);
+
+        provider.toggleChartType();
         expect(provider.isBarChart, true);
       });
 
@@ -328,6 +331,158 @@ void main() {
     group('디버그 유틸리티 테스트', () {
       test('디버그 상태 출력', () {
         expect(() => provider.debugPrintState(), returnsNormally);
+      });
+    });
+
+    group('스택형 막대 차트 테스트', () {
+      test('초기 스택형 차트 데이터가 유효해야 함', () {
+        expect(provider.stackedBarChartData, isNotEmpty);
+        expect(provider.stackedBarChartData.length, 6); // 6개월 데이터
+        expect(provider.isStackedBarChart, false); // 초기값은 bar 차트
+        expect(provider.maxStackedBarChartValue, greaterThan(0));
+      });
+
+      test('스택형 차트 데이터 각 항목이 유효해야 함', () {
+        final stackedData = provider.stackedBarChartData;
+
+        for (final data in stackedData) {
+          expect(data.category, isNotEmpty);
+          expect(data.totalUsage, greaterThan(0));
+          expect(data.values, isNotEmpty);
+          expect(data.colors, isNotEmpty);
+
+          // 각 카테고리 값들이 0 이상이어야 함
+          expect(data.getValue('Base'), greaterThanOrEqualTo(0));
+          expect(data.getValue('AC'), greaterThanOrEqualTo(0));
+          expect(data.getValue('Heating'), greaterThanOrEqualTo(0));
+          expect(data.getValue('Other'), greaterThanOrEqualTo(0));
+
+          // 백분율 계산이 올바른지 확인
+          final percentages = data.percentages;
+          final totalPercentage =
+              percentages.values.fold(0.0, (sum, pct) => sum + pct);
+          expect(totalPercentage, closeTo(100.0, 0.01));
+        }
+      });
+
+      test('스택형 차트 데이터 업데이트', () {
+        final newData = [
+          StackedBarChartData.fromUsageData(
+            category: 'Test1',
+            baseUsage: 30.0,
+            acUsage: 20.0,
+            heatingUsage: 10.0,
+            etcUsage: 15.0,
+          ),
+          StackedBarChartData.fromUsageData(
+            category: 'Test2',
+            baseUsage: 35.0,
+            acUsage: 25.0,
+            heatingUsage: 5.0,
+            etcUsage: 20.0,
+          ),
+        ];
+
+        provider.updateStackedBarChartData(newData);
+
+        expect(provider.stackedBarChartData.length, 2);
+        expect(provider.stackedBarChartData[0].category, 'Test1');
+        expect(provider.stackedBarChartData[1].category, 'Test2');
+        expect(provider.stackedBarChartData[0].totalUsage, 75.0);
+        expect(provider.stackedBarChartData[1].totalUsage, 85.0);
+      });
+
+      test('스택형 차트 데이터 추가', () {
+        final initialCount = provider.stackedBarChartData.length;
+
+        final newItem = StackedBarChartData.fromUsageData(
+          category: 'NewMonth',
+          baseUsage: 40.0,
+          acUsage: 30.0,
+          heatingUsage: 8.0,
+          etcUsage: 12.0,
+        );
+
+        provider.addStackedBarChartData(newItem);
+
+        expect(provider.stackedBarChartData.length, initialCount + 1);
+        expect(provider.stackedBarChartData.last.category, 'NewMonth');
+        expect(provider.stackedBarChartData.last.totalUsage, 90.0);
+      });
+
+      test('스택형 차트 데이터 제거', () {
+        final initialCount = provider.stackedBarChartData.length;
+        expect(initialCount, greaterThan(0));
+
+        final firstCategory = provider.stackedBarChartData[0].category;
+        provider.removeStackedBarChartData(0);
+
+        expect(provider.stackedBarChartData.length, initialCount - 1);
+
+        // 첫 번째 항목이 제거되었는지 확인
+        if (provider.stackedBarChartData.isNotEmpty) {
+          expect(
+              provider.stackedBarChartData[0].category, isNot(firstCategory));
+        }
+      });
+
+      test('잘못된 인덱스로 스택형 차트 데이터 제거 시도', () {
+        final initialCount = provider.stackedBarChartData.length;
+
+        // 음수 인덱스
+        provider.removeStackedBarChartData(-1);
+        expect(provider.stackedBarChartData.length, initialCount);
+
+        // 범위를 벗어난 인덱스
+        provider.removeStackedBarChartData(9999);
+        expect(provider.stackedBarChartData.length, initialCount);
+      });
+
+      test('최대 스택형 차트 값 계산', () {
+        final maxValue = provider.maxStackedBarChartValue;
+
+        // 실제 데이터에서 최대값을 직접 계산
+        final actualMax = provider.stackedBarChartData
+            .map((item) => item.totalUsage)
+            .reduce((a, b) => a > b ? a : b);
+
+        expect(maxValue, actualMax);
+        expect(maxValue, greaterThan(0));
+      });
+
+      test('빈 스택형 차트 데이터에서 최대값 계산', () {
+        provider.updateStackedBarChartData([]);
+        expect(provider.maxStackedBarChartValue, 100.0); // 기본값
+      });
+
+      test('차트 타입 전환에서 스택형 차트 포함', () {
+        // bar -> pie
+        provider.setChartType(ChartType.bar);
+        provider.toggleChartType();
+        expect(provider.currentChartType, ChartType.pie);
+
+        // pie -> line
+        provider.toggleChartType();
+        expect(provider.currentChartType, ChartType.line);
+
+        // line -> stackedBar
+        provider.toggleChartType();
+        expect(provider.currentChartType, ChartType.stackedBar);
+        expect(provider.isStackedBarChart, true);
+
+        // stackedBar -> bar
+        provider.toggleChartType();
+        expect(provider.currentChartType, ChartType.bar);
+        expect(provider.isStackedBarChart, false);
+      });
+
+      test('스택형 차트 타입 직접 설정', () {
+        provider.setChartType(ChartType.stackedBar);
+        expect(provider.currentChartType, ChartType.stackedBar);
+        expect(provider.isStackedBarChart, true);
+        expect(provider.isBarChart, false);
+        expect(provider.isPieChart, false);
+        expect(provider.isLineChart, false);
       });
     });
   });
