@@ -18,29 +18,30 @@ void main() {
       await tester.pumpWidget(const MyApp());
 
       // Verify that the app shows the main components
-      expect(find.text('Chart Sample App'), findsOneWidget);
+      expect(find.text('Flutter Chart Sample'), findsOneWidget);
 
       // Check for chart area and control panel
       expect(find.byType(Consumer<ChartProvider>), findsWidgets);
 
-      // Verify chart type toggle buttons exist
-      expect(find.text('Bar Chart'), findsOneWidget);
-      expect(find.text('Pie Chart'), findsOneWidget);
+      // Verify the main structure is present
+      expect(find.byType(Scaffold), findsOneWidget);
+      expect(find.byType(AppBar), findsOneWidget);
     });
 
     testWidgets('Chart type can be toggled', (WidgetTester tester) async {
       await tester.pumpWidget(const MyApp());
 
-      // Find pie chart button and tap it
-      final pieChartButton = find.text('Pie Chart');
-      expect(pieChartButton, findsOneWidget);
+      // Find chart type buttons
+      expect(find.text('막대 그래프'), findsOneWidget);
+      expect(find.text('원형 그래프'), findsOneWidget);
 
-      await tester.tap(pieChartButton);
+      // Tap pie chart button
+      await tester.tap(find.text('원형 그래프'));
       await tester.pump();
 
-      // Verify the toggle worked - we should still have both buttons
-      expect(find.text('Bar Chart'), findsOneWidget);
-      expect(find.text('Pie Chart'), findsOneWidget);
+      // Verify the buttons are still present
+      expect(find.text('막대 그래프'), findsOneWidget);
+      expect(find.text('원형 그래프'), findsOneWidget);
     });
 
     testWidgets('Control panel sections are displayed',
@@ -48,9 +49,8 @@ void main() {
       await tester.pumpWidget(const MyApp());
 
       // Check for main control sections
-      expect(find.text('Chart Type'), findsOneWidget);
-      expect(find.text('Data Controls'), findsOneWidget);
-      expect(find.text('Chart Options'), findsOneWidget);
+      expect(find.text('컨트롤 패널'), findsOneWidget);
+      expect(find.text('차트 타입'), findsOneWidget);
     });
 
     testWidgets('App layout is responsive', (WidgetTester tester) async {

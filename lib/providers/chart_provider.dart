@@ -129,7 +129,7 @@ class ChartProvider extends ChangeNotifier {
     if (currentUsage > _pieChartData.totalCapacity) {
       debugPrint(
           'ChartProvider: 사용량이 총 용량을 초과함 - $currentUsage > ${_pieChartData.totalCapacity}');
-      // 경고만 출력하고 계속 진행
+      return; // 업데이트를 거부
     }
 
     _pieChartData = _pieChartData.copyWith(currentUsage: currentUsage);

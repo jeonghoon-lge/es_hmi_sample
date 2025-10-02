@@ -11,7 +11,7 @@ class ControlPanel extends StatelessWidget {
       builder: (context, chartProvider, child) {
         return Container(
           width: double.infinity,
-          height: double.infinity,
+          constraints: const BoxConstraints(minHeight: 200), // 최소 높이 설정
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(12),
@@ -26,9 +26,10 @@ class ControlPanel extends StatelessWidget {
           ),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 // 패널 타이틀
                 Text(
                   '컨트롤 패널',
@@ -180,6 +181,7 @@ class ControlPanel extends StatelessWidget {
                 ),
               ],
             ),
+          ),
           ),
         );
       },
