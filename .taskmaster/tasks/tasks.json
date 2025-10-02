@@ -1,0 +1,116 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Establish Unit Testing Policy",
+        "description": "Define comprehensive unit testing policies and procedures to be implemented as a subtask within each development task, establish test coverage goals, and establish a Test-Driven Development (TDD) workflow.",
+        "status": "in-progress",
+        "dependencies": [],
+        "priority": "high",
+        "details": "This task involves creating a structured approach to unit testing across the project:\n\n1. Define unit testing standards:\n   - Specify testing frameworks to be used (e.g., Jest, JUnit, pytest)\n   - Establish naming conventions for test files and test cases\n   - Define test organization structure (e.g., mirror source code structure)\n\n2. Set test coverage goals:\n   - Determine minimum code coverage requirements (e.g., 80% line coverage)\n   - Identify critical components requiring higher coverage\n   - Configure code coverage tools and reporting mechanisms\n\n3. Establish TDD workflow:\n   - Document the red-green-refactor cycle process\n   - Create guidelines for writing tests before implementation\n   - Define when to write tests (before, during, or after implementation)\n\n4. Create testing procedures:\n   - Develop checklist for test quality assessment\n   - Establish review process for test code\n   - Define integration with CI/CD pipeline\n   - Ensure each development task includes a 'Unit Test Creation and Execution' subtask\n\n5. Documentation and training:\n   - Create reference documentation for the testing policy\n   - Develop examples of well-written tests\n   - Plan knowledge sharing sessions for the team\n   - Provide templates for unit test subtasks to be included in all future tasks\n\nThe final deliverable will be a comprehensive document outlining the unit testing policy, along with supporting materials such as templates, examples, and integration guides. The policy will specify that all future tasks must include a dedicated 'Unit Test Creation and Execution' subtask rather than creating separate unit testing tasks.",
+        "testStrategy": "The implementation of this task can be verified through:\n\n1. Document review:\n   - Ensure the unit testing policy document is complete and covers all required aspects\n   - Verify that test coverage goals are clearly defined and measurable\n   - Confirm TDD workflow is clearly articulated with practical examples\n   - Validate that the policy includes clear guidelines for incorporating unit testing as a subtask\n\n2. Team feedback:\n   - Present the policy to the development team for review\n   - Collect and incorporate feedback from team members\n   - Ensure the policy is understood and accepted by all stakeholders\n\n3. Practical application:\n   - Apply the policy to a sample component or feature\n   - Verify that the policy provides clear guidance in real-world scenarios\n   - Confirm that the defined procedures can be followed without ambiguity\n   - Test the implementation of unit testing as a subtask within a development task\n\n4. Integration verification:\n   - Ensure the policy integrates with existing development processes\n   - Verify compatibility with CI/CD pipeline\n   - Test reporting mechanisms for coverage and test results\n   - Confirm task templates include the required unit testing subtask\n\n5. Success criteria:\n   - Policy document is approved by technical leadership\n   - Team members demonstrate understanding of the policy\n   - Initial implementation shows feasibility and effectiveness of the approach\n   - New tasks are created with the required unit testing subtask",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Analyze Current Testing Practices and Framework Selection",
+            "description": "Evaluate existing testing practices and select appropriate testing frameworks for different components of the project.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Conduct an assessment of current testing approaches across teams, identify gaps in testing coverage, and evaluate testing frameworks (Jest, JUnit, pytest, etc.) based on project requirements. Create a comparison matrix of frameworks with pros and cons, and finalize framework selections for different project components.",
+            "testStrategy": "Verify through a document that outlines the analysis methodology, framework comparison criteria, and justification for selected frameworks. Include feedback from technical leads confirming the appropriateness of framework selections."
+          },
+          {
+            "id": 2,
+            "title": "Develop Unit Testing Standards and Conventions",
+            "description": "Create comprehensive documentation for unit testing standards including naming conventions, file organization, and test structure.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Define standardized naming conventions for test files and test cases, establish test organization structure that mirrors source code, create templates for test files, and specify assertion patterns and mocking strategies. Include examples of well-written tests for reference.",
+            "testStrategy": "Review the standards document with senior developers to ensure clarity and applicability. Create sample test files following the standards and verify they meet the established criteria."
+          },
+          {
+            "id": 3,
+            "title": "Establish Test Coverage Goals and Monitoring",
+            "description": "Define minimum code coverage requirements, identify critical components requiring higher coverage, and configure coverage tools.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Set baseline code coverage targets (e.g., 80% line coverage), identify high-risk or critical components requiring higher coverage thresholds, configure code coverage tools appropriate for selected frameworks, and establish reporting mechanisms to track coverage metrics over time.",
+            "testStrategy": "Implement a trial run of coverage tools on existing code to validate configuration. Create a dashboard showing coverage metrics and verify it accurately reflects test execution results."
+          },
+          {
+            "id": 4,
+            "title": "Document TDD Workflow and Integration Procedures",
+            "description": "Create detailed guidelines for implementing Test-Driven Development workflow and integrating testing into the development process.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Document the red-green-refactor cycle with practical examples, create guidelines for writing tests before implementation, define test quality assessment checklists, establish review processes for test code, and specify how testing integrates with the CI/CD pipeline.",
+            "testStrategy": "Conduct a pilot implementation of the TDD workflow with a small team to validate the process. Review the resulting code and tests to ensure they meet quality standards and follow the documented procedures."
+          },
+          {
+            "id": 5,
+            "title": "Implement Training and Rollout Plan",
+            "description": "Develop training materials and a phased rollout plan for implementing the unit testing policy across all teams.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Create comprehensive reference documentation for the testing policy, develop training modules with hands-on exercises, schedule knowledge sharing sessions, plan a phased implementation approach starting with pilot teams, and establish a feedback mechanism to refine the policy based on practical implementation experience.",
+            "testStrategy": "Conduct training sessions and collect participant feedback. Monitor adoption metrics after initial rollout, including increases in test coverage and adherence to the defined standards."
+          },
+          {
+            "id": 6,
+            "title": "Create Unit Test Subtask Template",
+            "description": "Develop a standardized template for the 'Unit Test Creation and Execution' subtask to be included in all future development tasks.",
+            "status": "pending",
+            "dependencies": [],
+            "details": "Create a template that includes standard sections for test scope definition, test case identification, implementation approach, coverage goals, and verification methods. The template should be adaptable to different types of development tasks while maintaining consistent quality standards for unit testing.",
+            "testStrategy": "Apply the template to several different types of tasks to ensure it's flexible and comprehensive. Gather feedback from developers on the template's usability and completeness. Verify that the template provides clear guidance for implementing unit tests as part of development tasks."
+          },
+          {
+            "id": 7,
+            "title": "Update Task Creation Process",
+            "description": "Modify the task creation workflow to automatically include the 'Unit Test Creation and Execution' subtask in all new development tasks.",
+            "status": "pending",
+            "dependencies": [
+              6
+            ],
+            "details": "Work with project management to update task creation templates and processes to ensure all new development tasks include the standardized unit testing subtask. Create documentation for task creators explaining the purpose and implementation of the unit testing subtask. Establish a verification mechanism to ensure compliance with the new policy.",
+            "testStrategy": "Create sample tasks using the updated process and verify they correctly include the unit testing subtask. Review task creation documentation to ensure clarity. Collect feedback from task creators on the updated process."
+          },
+          {
+            "id": 8,
+            "title": "Unit Test 작성 및 실행 - Testing Policy Implementation",
+            "description": "Unit Testing Policy 구현에 대한 포괄적인 unit test 작성 및 실행. 테스트 범위: 정책 문서 검증, 템플릿 유효성, Taskmaster 통합 테스트. 테스트 파일: test/integration/testing_policy_test.dart. 커버리지 목표: 정책 적용 프로세스 100% 검증",
+            "details": "",
+            "status": "pending",
+            "dependencies": [
+              "1.1,1.2,1.3,1.4,1.5,1.6,1.7"
+            ],
+            "parentTaskId": 1
+          },
+          {
+            "id": 9,
+            "title": "Git Upload 및 버전 관리 - Unit Testing Policy",
+            "description": "Unit Testing Policy 구현의 모든 변경사항을 Git repository에 commit하고 push. 업로드 범위: 정책 문서, 템플릿 파일, Taskmaster 설정, 테스트 파일. 브랜치: feature/task-1-unit-testing-policy. 커밋 메시지: feat(task-1): Establish unit testing policy with subtask templates",
+            "details": "",
+            "status": "pending",
+            "dependencies": [
+              "1.8"
+            ],
+            "parentTaskId": 1
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2025-10-02T01:52:41.750Z",
+      "taskCount": 1,
+      "completedCount": 0,
+      "tags": [
+        "master"
+      ],
+      "created": "2025-10-02T01:55:16.870Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
