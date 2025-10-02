@@ -168,17 +168,20 @@ void main() {
         expect(provider.isBarChart, true);
 
         provider.toggleChartType();
-        expect(provider.isBarChart, false);
+        expect(provider.isPieChart, true);
+
+        provider.toggleChartType();
+        expect(provider.isLineChart, true);
 
         provider.toggleChartType();
         expect(provider.isBarChart, true);
       });
 
       test('특정 차트 타입 설정', () {
-        provider.setChartType(false);
+        provider.setChartType(ChartType.pie);
         expect(provider.isBarChart, false);
 
-        provider.setChartType(true);
+        provider.setChartType(ChartType.bar);
         expect(provider.isBarChart, true);
       });
     });

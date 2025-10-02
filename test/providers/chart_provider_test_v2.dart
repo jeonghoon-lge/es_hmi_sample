@@ -129,10 +129,10 @@ void main() {
       });
 
       test('특정 차트 타입 설정', () {
-        provider.setChartType(false);
+        provider.setChartType(ChartType.pie);
         expect(provider.isBarChart, false);
 
-        provider.setChartType(true);
+        provider.setChartType(ChartType.bar);
         expect(provider.isBarChart, true);
       });
     });

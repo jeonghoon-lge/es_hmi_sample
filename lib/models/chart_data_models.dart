@@ -1,5 +1,47 @@
 import 'package:flutter/material.dart';
 
+/// 지원되는 차트 타입
+enum ChartType {
+  bar, // 막대 차트
+  pie, // 원형 차트
+  line, // 라인 차트
+}
+
+extension ChartTypeExtension on ChartType {
+  String get displayName {
+    switch (this) {
+      case ChartType.bar:
+        return '막대 그래프';
+      case ChartType.pie:
+        return '원형 그래프';
+      case ChartType.line:
+        return '라인 그래프';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case ChartType.bar:
+        return Icons.bar_chart;
+      case ChartType.pie:
+        return Icons.pie_chart;
+      case ChartType.line:
+        return Icons.show_chart;
+    }
+  }
+
+  Color get indicatorColor {
+    switch (this) {
+      case ChartType.bar:
+        return Colors.blue;
+      case ChartType.pie:
+        return Colors.green;
+      case ChartType.line:
+        return Colors.orange;
+    }
+  }
+}
+
 /// 막대 그래프를 위한 데이터 모델
 class BarChartDataModel {
   final String label;
@@ -55,6 +97,133 @@ class BarChartDataModel {
       acUsage: (json['acUsage'] as num).toDouble(),
       heatingUsage: (json['heatingUsage'] as num).toDouble(),
       etcUsage: (json['etcUsage'] as num).toDouble(),
+    );
+  }
+}
+
+/// 라인 차트를 위한 데이터 포인트 모델
+class LineChartDataPoint {
+  final String label;
+  final double value;
+  final DateTime? timestamp;
+
+  LineChartDataPoint({
+    required this.label,
+    required this.value,
+    this.timestamp,
+  });
+
+  /// 복사본 생성
+  LineChartDataPoint copyWith({
+    String? label,
+    double? value,
+    DateTime? timestamp,
+  }) {
+    return LineChartDataPoint(
+      label: label ?? this.label,
+      value: value ?? this.value,
+      timestamp: timestamp ?? this.timestamp,
+    );
+  }
+
+  /// JSON으로 변환
+  Map<String, dynamic> toJson() {
+    return {
+      'label': label,
+      'value': value,
+      'timestamp': timestamp?.toIso8601String(),
+    };
+  }
+
+  /// JSON에서 생성
+  factory LineChartDataPoint.fromJson(Map<String, dynamic> json) {
+    return LineChartDataPoint(
+      label: json['label'] as String,
+      value: (json['value'] as num).toDouble(),
+      timestamp: json['timestamp'] != null
+          ? DateTime.parse(json['timestamp'] as String)
+          : null,
+    );
+  }
+}
+
+/// 라인 차트를 위한 데이터 모델
+class LineChartDataModel {
+  final String seriesName;
+  final List<LineChartDataPoint> dataPoints;
+  final Color lineColor;
+  final double lineWidth;
+  final bool showDots;
+
+  LineChartDataModel({
+    required this.seriesName,
+    required this.dataPoints,
+    this.lineColor = Colors.blue,
+    this.lineWidth = 2.0,
+    this.showDots = true,
+  });
+
+  /// 최대값 계산
+  double get maxValue => dataPoints.isEmpty
+      ? 0.0
+      : dataPoints.map((point) => point.value).reduce((a, b) => a > b ? a : b);
+
+  /// 최소값 계산
+  double get minValue => dataPoints.isEmpty
+      ? 0.0
+      : dataPoints.map((point) => point.value).reduce((a, b) => a < b ? a : b);
+
+  /// 복사본 생성
+  LineChartDataModel copyWith({
+    String? seriesName,
+    List<LineChartDataPoint>? dataPoints,
+    Color? lineColor,
+    double? lineWidth,
+    bool? showDots,
+  }) {
+    return LineChartDataModel(
+      seriesName: seriesName ?? this.seriesName,
+      dataPoints: dataPoints ?? this.dataPoints,
+      lineColor: lineColor ?? this.lineColor,
+      lineWidth: lineWidth ?? this.lineWidth,
+      showDots: showDots ?? this.showDots,
+    );
+  }
+
+  /// JSON으로 변환
+  Map<String, dynamic> toJson() {
+    return {
+      'seriesName': seriesName,
+      'dataPoints': dataPoints.map((point) => point.toJson()).toList(),
+      'lineColor': {
+        'red': lineColor.r,
+        'green': lineColor.g,
+        'blue': lineColor.b,
+        'alpha': lineColor.a,
+      },
+      'lineWidth': lineWidth,
+      'showDots': showDots,
+    };
+  }
+
+  /// JSON에서 생성
+  factory LineChartDataModel.fromJson(Map<String, dynamic> json) {
+    final colorData = json['lineColor'] as Map<String, dynamic>;
+    final color = Color.fromARGB(
+      colorData['alpha'] as int,
+      colorData['red'] as int,
+      colorData['green'] as int,
+      colorData['blue'] as int,
+    );
+
+    return LineChartDataModel(
+      seriesName: json['seriesName'] as String,
+      dataPoints: (json['dataPoints'] as List)
+          .map((pointJson) => LineChartDataPoint.fromJson(pointJson))
+          .toList(),
+      lineColor: color,
+      lineWidth: (json['lineWidth'] as num).toDouble(),
+      showDots: json['showDots'] as bool,
     );
   }
 }

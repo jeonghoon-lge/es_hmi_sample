@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/chart_provider.dart';
+import '../models/chart_data_models.dart';
 
 class ControlPanel extends StatelessWidget {
   const ControlPanel({super.key});
@@ -54,9 +55,9 @@ class ControlPanel extends StatelessWidget {
             child: _buildChartTypeButton(
               context,
               chartProvider,
-              isBarChart: true,
-              icon: Icons.bar_chart,
-              label: '막대 그래프',
+              chartType: ChartType.bar,
+              icon: ChartType.bar.icon,
+              label: ChartType.bar.displayName,
             ),
           ),
           const SizedBox(width: 8),
@@ -64,9 +65,19 @@ class ControlPanel extends StatelessWidget {
             child: _buildChartTypeButton(
               context,
               chartProvider,
-              isBarChart: false,
-              icon: Icons.pie_chart,
-              label: '원형 그래프',
+              chartType: ChartType.pie,
+              icon: ChartType.pie.icon,
+              label: ChartType.pie.displayName,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _buildChartTypeButton(
+              context,
+              chartProvider,
+              chartType: ChartType.line,
+              icon: ChartType.line.icon,
+              label: ChartType.line.displayName,
             ),
           ),
         ],
@@ -182,13 +193,13 @@ class ControlPanel extends StatelessWidget {
   Widget _buildChartTypeButton(
     BuildContext context,
     ChartProvider chartProvider, {
-    required bool isBarChart,
+    required ChartType chartType,
     required IconData icon,
     required String label,
   }) {
-    final isSelected = chartProvider.isBarChart == isBarChart;
+    final isSelected = chartProvider.currentChartType == chartType;
     return InkWell(
-      onTap: () => chartProvider.setChartType(isBarChart),
+      onTap: () => chartProvider.setChartType(chartType),
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
@@ -221,6 +232,7 @@ class ControlPanel extends StatelessWidget {
                     fontWeight:
                         isSelected ? FontWeight.w600 : FontWeight.normal,
                   ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

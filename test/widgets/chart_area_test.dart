@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:chart_sample_app/widgets/chart_area.dart';
 import 'package:chart_sample_app/providers/chart_provider.dart';
+import 'package:chart_sample_app/models/chart_data_models.dart';
 
 void main() {
   group('ChartArea Widget Tests', () {
@@ -15,7 +16,7 @@ void main() {
 
     Widget createTestWidget({required bool isBarChart, bool withData = true}) {
       if (isBarChart) {
-        chartProvider.setChartType(true);
+        chartProvider.setChartType(ChartType.bar);
         if (withData) {
           // Add data entries first, then update them
           chartProvider.addBarChartData('Day 1');
@@ -24,7 +25,7 @@ void main() {
           chartProvider.updateBarDataCategory(1, 'acUsage', 15.0);
         }
       } else {
-        chartProvider.setChartType(false);
+        chartProvider.setChartType(ChartType.pie);
         if (withData) {
           // Add sample pie chart data - use named parameters
           chartProvider.updatePieData(currentUsage: 25.0, totalCapacity: 100.0);
@@ -97,7 +98,7 @@ void main() {
       expect(find.byType(PieChart), findsNothing);
 
       // When - Switch to pie chart
-      chartProvider.setChartType(false);
+      chartProvider.setChartType(ChartType.pie);
       await tester.pump(); // Start animation
       await tester.pump(const Duration(milliseconds: 250)); // Mid animation
       await tester.pumpAndSettle(); // Complete animation
@@ -241,10 +242,10 @@ void main() {
       );
 
       // When - Multiple updates
-      provider.setChartType(false);
+      provider.setChartType(ChartType.pie);
       await tester.pump();
 
-      provider.setChartType(true);
+      provider.setChartType(ChartType.bar);
       await tester.pump();
 
       provider.updatePieData(currentUsage: 50.0, totalCapacity: 100.0);

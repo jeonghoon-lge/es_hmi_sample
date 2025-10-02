@@ -71,7 +71,7 @@ class ChartArea extends StatelessWidget {
   /// 차트 제목
   Widget _buildChartTitle(BuildContext context, ChartProvider chartProvider) {
     return Text(
-      chartProvider.isBarChart ? '막대 그래프' : '원형 그래프',
+      chartProvider.currentChartType.displayName,
       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.bold,
           ),
@@ -81,33 +81,31 @@ class ChartArea extends StatelessWidget {
   /// 차트 타입 표시기
   Widget _buildChartTypeIndicator(
       BuildContext context, ChartProvider chartProvider) {
-    final isBarChart = chartProvider.isBarChart;
+    final chartType = chartProvider.currentChartType;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: 8,
         vertical: 4,
       ),
       decoration: BoxDecoration(
-        color: isBarChart
-            ? Colors.blue.withValues(alpha: 0.1)
-            : Colors.green.withValues(alpha: 0.1),
+        color: chartType.indicatorColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            isBarChart ? Icons.bar_chart : Icons.pie_chart,
+            chartType.icon,
             size: 16,
-            color: isBarChart ? Colors.blue : Colors.green,
+            color: chartType.indicatorColor,
           ),
           const SizedBox(width: 4),
           Text(
-            isBarChart ? 'BAR' : 'PIE',
+            chartType.name.toUpperCase(),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isBarChart ? Colors.blue : Colors.green,
+              color: chartType.indicatorColor,
             ),
           ),
         ],
@@ -158,20 +156,33 @@ class ChartArea extends StatelessWidget {
         );
       },
       child: Container(
-        key: ValueKey(chartProvider.isBarChart),
-        child: chartProvider.isBarChart
-            ? _buildBarChart(chartProvider)
-            : _buildPieChart(chartProvider),
+        key: ValueKey(chartProvider.currentChartType),
+        child: _buildChart(chartProvider),
       ),
     );
   }
 
+  /// 차트 선택 및 빌드
+  Widget _buildChart(ChartProvider chartProvider) {
+    switch (chartProvider.currentChartType) {
+      case ChartType.bar:
+        return _buildBarChart(chartProvider);
+      case ChartType.pie:
+        return _buildPieChart(chartProvider);
+      case ChartType.line:
+        return _buildLineChart(chartProvider);
+    }
+  }
+
   /// 차트 요약 정보
   Widget _buildChartSummary(BuildContext context, ChartProvider chartProvider) {
-    if (chartProvider.isBarChart) {
-      return _buildBarChartSummary(context, chartProvider);
-    } else {
-      return _buildPieChartSummary(context, chartProvider);
+    switch (chartProvider.currentChartType) {
+      case ChartType.bar:
+        return _buildBarChartSummary(context, chartProvider);
+      case ChartType.pie:
+        return _buildPieChartSummary(context, chartProvider);
+      case ChartType.line:
+        return _buildLineChartSummary(context, chartProvider);
     }
   }
 
@@ -276,6 +287,30 @@ class ChartArea extends StatelessWidget {
           const SizedBox(height: 16),
           Text(
             '데이터가 없습니다',
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 빈 차트 위젯 (공통)
+  Widget _buildEmptyChart(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.show_chart,
+            size: 80,
+            color: Colors.grey.withValues(alpha: 0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
             style: TextStyle(
               color: Colors.grey.shade600,
               fontSize: 16,
@@ -597,6 +632,293 @@ class ChartArea extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// 라인 차트 빌드
+  Widget _buildLineChart(ChartProvider chartProvider) {
+    final data = chartProvider.lineChartData;
+    if (data.isEmpty || data.every((series) => series.dataPoints.isEmpty)) {
+      return _buildEmptyChart('라인 차트 데이터가 없습니다.');
+    }
+
+    // 모든 시리즈의 데이터포인트를 하나로 합치기 (첫 번째 시리즈만 사용)
+    final firstSeries = data.first;
+    final dataPoints = firstSeries.dataPoints;
+
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: true,
+          drawHorizontalLine: true,
+          horizontalInterval: 1,
+          verticalInterval: 1,
+          getDrawingHorizontalLine: (value) {
+            return FlLine(
+              color: Colors.grey.withValues(alpha: 0.3),
+              strokeWidth: 1,
+            );
+          },
+          getDrawingVerticalLine: (value) {
+            return FlLine(
+              color: Colors.grey.withValues(alpha: 0.3),
+              strokeWidth: 1,
+            );
+          },
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              interval: 1,
+              getTitlesWidget: (double value, TitleMeta meta) {
+                final index = value.toInt();
+                if (index >= 0 && index < dataPoints.length) {
+                  final timestamp = dataPoints[index].timestamp;
+                  if (timestamp != null) {
+                    return Text(
+                      '${timestamp.month}/${timestamp.day}',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    );
+                  }
+                }
+                return const Text('');
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: 1,
+              getTitlesWidget: (double value, TitleMeta meta) {
+                return Text(
+                  value.toInt().toString(),
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                );
+              },
+              reservedSize: 28,
+            ),
+          ),
+        ),
+        borderData: FlBorderData(
+          show: true,
+          border: Border.all(
+            color: Colors.grey.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        minX: 0,
+        maxX: dataPoints.isNotEmpty ? (dataPoints.length - 1).toDouble() : 0,
+        minY: 0,
+        maxY: dataPoints.isNotEmpty
+            ? dataPoints.map((e) => e.value).reduce((a, b) => a > b ? a : b) + 1
+            : 10,
+        lineBarsData: [
+          LineChartBarData(
+            spots: dataPoints
+                .asMap()
+                .entries
+                .map((entry) => FlSpot(entry.key.toDouble(), entry.value.value))
+                .toList(),
+            isCurved: true,
+            gradient: LinearGradient(
+              colors: [
+                chartProvider.colorScheme.baseUsageColor,
+                chartProvider.colorScheme.baseUsageColor.withValues(alpha: 0.3),
+              ],
+            ),
+            barWidth: 3,
+            isStrokeCapRound: true,
+            dotData: FlDotData(
+              show: true,
+              getDotPainter: (spot, percent, barData, index) {
+                return FlDotCirclePainter(
+                  radius: 4,
+                  color: chartProvider.colorScheme.baseUsageColor,
+                  strokeWidth: 2,
+                  strokeColor: Colors.white,
+                );
+              },
+            ),
+            belowBarData: BarAreaData(
+              show: true,
+              gradient: LinearGradient(
+                colors: [
+                  chartProvider.colorScheme.baseUsageColor
+                      .withValues(alpha: 0.3),
+                  chartProvider.colorScheme.baseUsageColor
+                      .withValues(alpha: 0.0),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ],
+        lineTouchData: LineTouchData(
+          enabled: true,
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+              return touchedBarSpots.map((barSpot) {
+                final index = barSpot.x.toInt();
+                if (index >= 0 && index < dataPoints.length) {
+                  final point = dataPoints[index];
+                  final timestamp = point.timestamp;
+                  if (timestamp != null) {
+                    return LineTooltipItem(
+                      '${timestamp.month}/${timestamp.day}\n${point.value.toStringAsFixed(1)} kWh',
+                      const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  }
+                }
+                return null;
+              }).toList();
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 라인 차트 요약 정보
+  Widget _buildLineChartSummary(
+      BuildContext context, ChartProvider chartProvider) {
+    final data = chartProvider.lineChartData;
+    if (data.isEmpty || data.every((series) => series.dataPoints.isEmpty)) {
+      return const SizedBox.shrink();
+    }
+
+    // 첫 번째 시리즈의 데이터포인트를 사용
+    final firstSeries = data.first;
+    final dataPoints = firstSeries.dataPoints;
+
+    final maxValue =
+        dataPoints.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    final minValue =
+        dataPoints.map((e) => e.value).reduce((a, b) => a < b ? a : b);
+    final avgValue = dataPoints.map((e) => e.value).reduce((a, b) => a + b) /
+        dataPoints.length;
+    final latestValue = dataPoints.last.value;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Colors.grey.withValues(alpha: 0.2),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '라인 차트 요약',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSummaryItem(
+                context,
+                '최신값',
+                latestValue.toStringAsFixed(1),
+                Icons.timeline,
+                chartProvider.colorScheme.baseUsageColor,
+              ),
+              _buildSummaryItem(
+                context,
+                '최대값',
+                maxValue.toStringAsFixed(1),
+                Icons.trending_up,
+                Colors.red,
+              ),
+              _buildSummaryItem(
+                context,
+                '평균값',
+                avgValue.toStringAsFixed(1),
+                Icons.show_chart,
+                Colors.orange,
+              ),
+              _buildSummaryItem(
+                context,
+                '최소값',
+                minValue.toStringAsFixed(1),
+                Icons.trending_down,
+                Colors.green,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 요약 정보 아이템
+  Widget _buildSummaryItem(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Column(
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: color,
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          'kWh',
+          style: TextStyle(
+            fontSize: 10,
+            color: Colors.grey.shade500,
+          ),
+        ),
+      ],
     );
   }
 }
