@@ -11,9 +11,13 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Flutter Chart Sample'),
+        title: const Text(
+          'Flutter Chart Sample',
+          overflow: TextOverflow.ellipsis,
+        ),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         elevation: 2,
+        centerTitle: true,
       ),
       body: Consumer<ChartProvider>(
         builder: (context, chartProvider, child) {
@@ -45,32 +49,34 @@ class HomeScreen extends StatelessWidget {
   /// 데스크톱/태블릿용 좌우 분할 레이아웃
   Widget _buildDesktopLayout(
       BuildContext context, ChartProvider chartProvider) {
-    return Row(
-      children: [
-        // 차트 영역 (왼쪽, 70% 너비)
-        Expanded(
-          flex: 7,
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
-            child: const ChartArea(),
+    return SafeArea(
+      child: Row(
+        children: [
+          // 차트 영역 (왼쪽, 70% 너비)
+          Expanded(
+            flex: 7,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: const ChartArea(),
+            ),
           ),
-        ),
 
-        // 구분선
-        Container(
-          width: 1,
-          color: Theme.of(context).dividerColor,
-        ),
-
-        // 컨트롤 패널 (오른쪽, 30% 너비)
-        Expanded(
-          flex: 3,
-          child: Container(
-            padding: const EdgeInsets.all(16.0),
-            child: const ControlPanel(),
+          // 구분선
+          Container(
+            width: 1,
+            color: Theme.of(context).dividerColor,
           ),
-        ),
-      ],
+
+          // 컨트롤 패널 (오른쪽, 30% 너비)
+          Expanded(
+            flex: 3,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: const ControlPanel(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

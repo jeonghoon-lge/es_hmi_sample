@@ -288,6 +288,19 @@ class ChartProvider extends ChangeNotifier {
     debugPrint('ChartProvider: 새로운 막대 그래프 데이터 추가 - $label');
   }
 
+  /// 샘플 데이터 추가
+  void addSampleData() {
+    final sampleData = ChartDataHelper.getSampleBarChartData();
+    if (sampleData.isNotEmpty) {
+      final newData = sampleData.first.copyWith(
+        label: '${DateTime.now().month}/${DateTime.now().day}',
+      );
+      _barChartData.add(newData);
+      notifyListeners();
+      debugPrint('ChartProvider: 샘플 데이터 추가 - ${newData.label}');
+    }
+  }
+
   /// 막대 그래프 데이터 제거
   void removeBarChartData(int index) {
     if (index >= 0 && index < _barChartData.length) {

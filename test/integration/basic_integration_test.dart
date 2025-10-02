@@ -15,7 +15,7 @@ void main() {
           ),
         ),
       );
-      
+
       // 기본적으로 Material App이 로드되었는지 확인
       expect(find.byType(MaterialApp), findsOneWidget);
       expect(find.byType(Scaffold), findsOneWidget);
@@ -39,7 +39,7 @@ void main() {
           ),
         ),
       );
-      
+
       // Material Design 컴포넌트들이 작동하는지 확인
       expect(find.byType(MaterialApp), findsOneWidget);
       expect(find.byType(Scaffold), findsOneWidget);
