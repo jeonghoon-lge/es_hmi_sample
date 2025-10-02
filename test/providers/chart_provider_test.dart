@@ -109,7 +109,8 @@ void main() {
 
         expect(provider.pieChartData.currentUsage, testUsage);
         // 기본 총 용량 4800 중 75 사용시 백분율 계산
-        expect(provider.pieChartData.percentage, closeTo(1.5625, 0.001)); // 75/4800 * 100
+        expect(provider.pieChartData.percentage,
+            closeTo(1.5625, 0.001)); // 75/4800 * 100
       });
 
       test('음수 현재 사용량 업데이트 시 무시', () {
@@ -245,7 +246,8 @@ void main() {
         provider.resetToEmpty();
 
         expect(provider.barChartData.length, 7); // 7일간의 빈 데이터
-        expect(provider.barChartData.every((data) => data.totalUsage == 0), true); // 모든 사용량이 0
+        expect(provider.barChartData.every((data) => data.totalUsage == 0),
+            true); // 모든 사용량이 0
         expect(provider.pieChartData.currentUsage, 0);
         expect(provider.pieChartData.totalCapacity, 100.0);
       });
@@ -258,7 +260,7 @@ void main() {
           provider.updateBarData(i,
               baseUsage: 0, acUsage: 0, heatingUsage: 0, etcUsage: 0);
         }
-        
+
         // 특정 값들 설정
         provider.updateBarData(0,
             baseUsage: 100.0, acUsage: 0, heatingUsage: 0, etcUsage: 0);
