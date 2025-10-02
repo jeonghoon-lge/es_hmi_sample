@@ -13,6 +13,10 @@ class ChartProvider extends ChangeNotifier {
   ChartColorScheme _colorScheme = ChartColorScheme.defaultScheme;
   bool _isLoading = false;
 
+  // Cached values for performance optimization
+  double? _cachedMaxBarChartValue;
+  List<LegendItem>? _cachedLegends;
+
   // Getters
   List<BarChartDataModel> get barChartData => List.unmodifiable(_barChartData);
   PieChartDataModel get pieChartData => _pieChartData;
@@ -32,12 +36,18 @@ class ChartProvider extends ChangeNotifier {
   /// 차트 데이터 총 개수
   int get barChartDataCount => _barChartData.length;
 
-  /// 막대 그래프 최대값 계산
-  double get maxBarChartValue =>
-      ChartDataHelper.getMaxValueFromBarData(_barChartData);
+  /// 막대 그래프 최대값 계산 (캐시 적용)
+  double get maxBarChartValue {
+    _cachedMaxBarChartValue ??=
+        ChartDataHelper.getMaxValueFromBarData(_barChartData);
+    return _cachedMaxBarChartValue!;
+  }
 
-  /// 범례 데이터
-  List<LegendItem> get legends => ChartDataHelper.getBarChartLegends();
+  /// 범례 데이터 (캐시 적용)
+  List<LegendItem> get legends {
+    _cachedLegends ??= ChartDataHelper.getBarChartLegends();
+    return _cachedLegends!;
+  }
 
   /// 초기 데이터 로드
   void initializeData() {
@@ -435,5 +445,14 @@ class ChartProvider extends ChangeNotifier {
     return _stackedBarChartData
         .map((item) => item.totalUsage)
         .reduce((max, current) => current > max ? current : max);
+  }
+
+  /// 캐시 클리어 및 리스너 알림
+  @override
+  void notifyListeners() {
+    // Clear all cached values when data changes
+    _cachedMaxBarChartValue = null;
+    _cachedLegends = null;
+    super.notifyListeners();
   }
 }

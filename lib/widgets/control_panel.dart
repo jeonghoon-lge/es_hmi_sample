@@ -241,12 +241,18 @@ class ControlPanel extends StatelessWidget {
     final data = chartProvider.pieChartData;
     List<Widget> sliders = [];
 
+    // 안전한 최대값 계산 (현재 사용량과 총 용량 중 큰 값의 1.5배)
+    final safeMaxCapacity = (data.totalCapacity > data.currentUsage
+            ? data.totalCapacity
+            : data.currentUsage) *
+        1.5;
+
     sliders.add(_buildSlider(
       context: context,
       label: '현재 사용량',
       value: data.currentUsage,
       min: 0,
-      max: data.totalCapacity,
+      max: safeMaxCapacity,
       onChanged: (value) {
         chartProvider.updatePieCurrentUsage(value);
       },
@@ -258,8 +264,8 @@ class ControlPanel extends StatelessWidget {
       context: context,
       label: '총 용량',
       value: data.totalCapacity,
-      min: data.currentUsage,
-      max: 200,
+      min: 0,
+      max: safeMaxCapacity,
       onChanged: (value) {
         chartProvider.updatePieTotalCapacity(value);
       },
@@ -368,12 +374,16 @@ class ControlPanel extends StatelessWidget {
             thumbColor: Theme.of(context).primaryColor,
             overlayColor: Theme.of(context).primaryColor.withAlpha(50),
           ),
-          child: Slider(
-            value: value.clamp(min, max),
-            min: min,
-            max: max,
-            divisions: (max - min).toInt(),
-            onChanged: onChanged,
+          child: Semantics(
+            label: '$label 조절, 현재 값: ${value.toStringAsFixed(1)}',
+            value: value.toStringAsFixed(1),
+            child: Slider(
+              value: min <= max ? value.clamp(min, max) : min,
+              min: min,
+              max: min <= max ? max : min + 1, // min이 max보다 클 경우 안전한 값 설정
+              divisions: min <= max ? (max - min).toInt().clamp(1, 100) : 1,
+              onChanged: onChanged,
+            ),
           ),
         ),
       ],
@@ -466,43 +476,48 @@ class ControlPanel extends StatelessWidget {
     required String label,
   }) {
     final isSelected = chartProvider.currentChartType == chartType;
-    return InkWell(
-      onTap: () => chartProvider.setChartType(chartType),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
-              : Colors.transparent,
-          border: Border.all(
+    return Semantics(
+      label: '$label로 차트 변경',
+      selected: isSelected,
+      button: true,
+      child: InkWell(
+        onTap: () => chartProvider.setChartType(chartType),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+          decoration: BoxDecoration(
             color: isSelected
-                ? Theme.of(context).primaryColor
-                : Colors.grey.shade300,
-          ),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
+                ? Theme.of(context).primaryColor.withValues(alpha: 0.1)
+                : Colors.transparent,
+            border: Border.all(
               color: isSelected
                   ? Theme.of(context).primaryColor
-                  : Colors.grey.shade600,
+                  : Colors.grey.shade300,
             ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: isSelected
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey.shade600,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.normal,
-                  ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey.shade600,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey.shade600,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       ),
     );

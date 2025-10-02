@@ -144,40 +144,80 @@ class ChartArea extends StatelessWidget {
   /// 애니메이션이 적용된 차트
   Widget _buildAnimatedChart(ChartProvider chartProvider) {
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 600),
       transitionBuilder: (Widget child, Animation<double> animation) {
         return FadeTransition(
           opacity: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0.0, 0.1),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
+          child: ScaleTransition(
+            scale: Tween<double>(
+              begin: 0.8,
+              end: 1.0,
+            ).animate(CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            )),
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 0.1),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            ),
           ),
         );
       },
       child: Container(
         key: ValueKey(chartProvider.currentChartType),
-        child: _buildChart(chartProvider),
+        child: RepaintBoundary(
+          child: _buildChart(chartProvider),
+        ),
       ),
     );
   }
 
   /// 차트 선택 및 빌드
   Widget _buildChart(ChartProvider chartProvider) {
+    Widget chart;
+    String accessibilityLabel;
+
     switch (chartProvider.currentChartType) {
       case ChartType.bar:
-        return _buildBarChart(chartProvider);
+        chart = _buildBarChart(chartProvider);
+        accessibilityLabel =
+            '막대 차트: ${chartProvider.barChartData.length}개의 데이터 포인트';
+        break;
       case ChartType.pie:
-        return _buildPieChart(chartProvider);
+        chart = _buildPieChart(chartProvider);
+        accessibilityLabel =
+            '파이 차트: 현재 사용량 ${chartProvider.pieChartData.currentUsage}kWh, 전체 용량 ${chartProvider.pieChartData.totalCapacity}kWh';
+        break;
       case ChartType.line:
-        return _buildLineChart(chartProvider);
+        chart = _buildLineChart(chartProvider);
+        accessibilityLabel =
+            '라인 차트: ${chartProvider.lineChartData.length}개의 시계열 데이터';
+        break;
       case ChartType.stackedBar:
-        return _buildStackedBarChart(chartProvider);
+        chart = _buildStackedBarChart(chartProvider);
+        accessibilityLabel =
+            '스택형 막대 차트: ${chartProvider.stackedBarChartData.length}개의 카테고리별 데이터';
+        break;
       case ChartType.donut:
-        return _buildDonutChart(chartProvider);
+        chart = _buildDonutChart(chartProvider);
+        accessibilityLabel =
+            '도넛 차트: 현재 사용량 ${chartProvider.pieChartData.currentUsage}kWh, 전체 용량 ${chartProvider.pieChartData.totalCapacity}kWh';
+        break;
     }
+
+    return Semantics(
+      label: accessibilityLabel,
+      child: ExcludeSemantics(
+        excluding: false,
+        child: chart,
+      ),
+    );
   }
 
   /// 차트 요약 정보
@@ -280,6 +320,8 @@ class ChartArea extends StatelessWidget {
         barGroups: _buildBarGroups(chartProvider, data, maxValue),
         gridData: _buildBarChartGrid(maxValue),
       ),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeInOutCubic,
     );
   }
 
@@ -533,6 +575,8 @@ class ChartArea extends StatelessWidget {
             sections: _buildPieChartSections(data),
             pieTouchData: _buildPieChartTouchData(),
           ),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeOutQuart,
         ),
         _buildPieChartCenterText(data),
       ],
