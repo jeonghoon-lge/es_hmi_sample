@@ -7,15 +7,20 @@ class ChartProvider extends ChangeNotifier {
   // Private fields
   List<BarChartDataModel> _barChartData = [];
   PieChartDataModel _pieChartData = ChartDataHelper.getEmptyPieChartData();
-  bool _isBarChart = true;
+  List<LineChartDataModel> _lineChartData = [];
+  ChartType _currentChartType = ChartType.bar;
   ChartColorScheme _colorScheme = ChartColorScheme.defaultScheme;
   bool _isLoading = false;
 
   // Getters
   List<BarChartDataModel> get barChartData => List.unmodifiable(_barChartData);
   PieChartDataModel get pieChartData => _pieChartData;
-  bool get isBarChart => _isBarChart;
-  bool get isPieChart => !_isBarChart;
+  List<LineChartDataModel> get lineChartData =>
+      List.unmodifiable(_lineChartData);
+  ChartType get currentChartType => _currentChartType;
+  bool get isBarChart => _currentChartType == ChartType.bar;
+  bool get isPieChart => _currentChartType == ChartType.pie;
+  bool get isLineChart => _currentChartType == ChartType.line;
   ChartColorScheme get colorScheme => _colorScheme;
   bool get isLoading => _isLoading;
 
@@ -36,13 +41,15 @@ class ChartProvider extends ChangeNotifier {
     try {
       _barChartData = ChartDataHelper.getSampleBarChartData();
       _pieChartData = ChartDataHelper.getSamplePieChartData();
+      _lineChartData = ChartDataHelper.getSampleLineChartData();
 
       debugPrint(
-          'ChartProvider: 데이터 초기화 완료 - Bar: ${_barChartData.length}개, Pie: ${_pieChartData.currentUsage}/${_pieChartData.totalCapacity}');
+          'ChartProvider: 데이터 초기화 완료 - Bar: ${_barChartData.length}개, Pie: ${_pieChartData.currentUsage}/${_pieChartData.totalCapacity}, Line: ${_lineChartData.length}개 시리즈');
     } catch (e) {
       debugPrint('ChartProvider: 데이터 초기화 오류 - $e');
       _barChartData = ChartDataHelper.getEmptyBarChartData(7);
       _pieChartData = ChartDataHelper.getEmptyPieChartData();
+      _lineChartData = ChartDataHelper.getEmptyLineChartData();
     } finally {
       _setLoading(false);
     }
@@ -180,23 +187,31 @@ class ChartProvider extends ChangeNotifier {
     debugPrint('ChartProvider: 원형 그래프 전체 데이터 업데이트');
   }
 
-  /// 차트 타입 전환 (막대 ↔ 원형)
+  /// 차트 타입 전환 (막대 → 원형 → 라인)
   void toggleChartType() {
-    _isBarChart = !_isBarChart;
+    switch (_currentChartType) {
+      case ChartType.bar:
+        _currentChartType = ChartType.pie;
+        break;
+      case ChartType.pie:
+        _currentChartType = ChartType.line;
+        break;
+      case ChartType.line:
+        _currentChartType = ChartType.bar;
+        break;
+    }
     notifyListeners();
 
-    debugPrint(
-        'ChartProvider: 차트 타입 전환 - ${_isBarChart ? "막대 그래프" : "원형 그래프"}');
+    debugPrint('ChartProvider: 차트 타입 전환 - ${_currentChartType.displayName}');
   }
 
   /// 특정 차트 타입으로 설정
-  void setChartType(bool isBarChart) {
-    if (_isBarChart != isBarChart) {
-      _isBarChart = isBarChart;
+  void setChartType(ChartType chartType) {
+    if (_currentChartType != chartType) {
+      _currentChartType = chartType;
       notifyListeners();
 
-      debugPrint(
-          'ChartProvider: 차트 타입 설정 - ${_isBarChart ? "막대 그래프" : "원형 그래프"}');
+      debugPrint('ChartProvider: 차트 타입 설정 - ${_currentChartType.displayName}');
     }
   }
 
@@ -240,7 +255,7 @@ class ChartProvider extends ChangeNotifier {
       _barChartData = ChartDataHelper.getSampleBarChartData();
       _pieChartData = ChartDataHelper.getSamplePieChartData();
       _colorScheme = ChartColorScheme.defaultScheme;
-      _isBarChart = true;
+      _currentChartType = ChartType.bar;
 
       debugPrint('ChartProvider: 모든 데이터 초기화 완료');
     } finally {
@@ -256,7 +271,7 @@ class ChartProvider extends ChangeNotifier {
       _barChartData = ChartDataHelper.getEmptyBarChartData(7);
       _pieChartData = ChartDataHelper.getEmptyPieChartData();
       _colorScheme = ChartColorScheme.defaultScheme;
-      _isBarChart = true;
+      _currentChartType = ChartType.bar;
 
       debugPrint('ChartProvider: 빈 데이터로 초기화 완료');
     } finally {
@@ -315,7 +330,7 @@ class ChartProvider extends ChangeNotifier {
   /// 디버그 정보 출력
   void debugPrintState() {
     debugPrint('=== ChartProvider 상태 ===');
-    debugPrint('차트 타입: ${_isBarChart ? "막대 그래프" : "원형 그래프"}');
+    debugPrint('차트 타입: ${_currentChartType.displayName}');
     debugPrint('로딩 중: $_isLoading');
     debugPrint('막대 그래프 데이터 수: ${_barChartData.length}');
     debugPrint(

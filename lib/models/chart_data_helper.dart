@@ -129,6 +129,109 @@ class ChartDataHelper {
       backgroundColor: Colors.grey.shade300,
     );
   }
+
+  /// 라인 차트용 샘플 데이터 (시간별 전력 사용량)
+  static List<LineChartDataModel> getSampleLineChartData() {
+    final now = DateTime.now();
+
+    return [
+      LineChartDataModel(
+        seriesName: '총 사용량',
+        lineColor: Colors.blue,
+        lineWidth: 3.0,
+        dataPoints: [
+          LineChartDataPoint(
+            label: '00:00',
+            value: 45.0,
+            timestamp: now.subtract(const Duration(hours: 24)),
+          ),
+          LineChartDataPoint(
+            label: '04:00',
+            value: 30.0,
+            timestamp: now.subtract(const Duration(hours: 20)),
+          ),
+          LineChartDataPoint(
+            label: '08:00',
+            value: 75.0,
+            timestamp: now.subtract(const Duration(hours: 16)),
+          ),
+          LineChartDataPoint(
+            label: '12:00',
+            value: 120.0,
+            timestamp: now.subtract(const Duration(hours: 12)),
+          ),
+          LineChartDataPoint(
+            label: '16:00',
+            value: 90.0,
+            timestamp: now.subtract(const Duration(hours: 8)),
+          ),
+          LineChartDataPoint(
+            label: '20:00',
+            value: 110.0,
+            timestamp: now.subtract(const Duration(hours: 4)),
+          ),
+          LineChartDataPoint(
+            label: '24:00',
+            value: 60.0,
+            timestamp: now,
+          ),
+        ],
+      ),
+      LineChartDataModel(
+        seriesName: '기본 사용량',
+        lineColor: Colors.amber,
+        lineWidth: 2.0,
+        dataPoints: [
+          LineChartDataPoint(label: '00:00', value: 25.0),
+          LineChartDataPoint(label: '04:00', value: 20.0),
+          LineChartDataPoint(label: '08:00', value: 40.0),
+          LineChartDataPoint(label: '12:00', value: 50.0),
+          LineChartDataPoint(label: '16:00', value: 45.0),
+          LineChartDataPoint(label: '20:00', value: 55.0),
+          LineChartDataPoint(label: '24:00', value: 35.0),
+        ],
+      ),
+    ];
+  }
+
+  /// 빈 라인 차트 데이터 생성
+  static List<LineChartDataModel> getEmptyLineChartData() {
+    return [
+      LineChartDataModel(
+        seriesName: '데이터 없음',
+        lineColor: Colors.grey,
+        dataPoints: [],
+      ),
+    ];
+  }
+
+  /// 라인 차트 데이터에서 최대값 계산
+  static double getMaxValueFromLineData(List<LineChartDataModel> data) {
+    if (data.isEmpty) return 100.0;
+
+    double maxValue = 0.0;
+    for (final series in data) {
+      final seriesMax = series.maxValue;
+      if (seriesMax > maxValue) {
+        maxValue = seriesMax;
+      }
+    }
+    return maxValue > 0 ? maxValue : 100.0;
+  }
+
+  /// 라인 차트 데이터에서 최소값 계산
+  static double getMinValueFromLineData(List<LineChartDataModel> data) {
+    if (data.isEmpty) return 0.0;
+
+    double minValue = double.infinity;
+    for (final series in data) {
+      final seriesMin = series.minValue;
+      if (seriesMin < minValue) {
+        minValue = seriesMin;
+      }
+    }
+    return minValue.isFinite ? minValue : 0.0;
+  }
 }
 
 /// 범례 아이템을 위한 모델
